@@ -6,7 +6,7 @@ VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.vm.box = "ubuntu/trusty32"
 
-    config.vm.network "private_network", ip: "10.10.10.25"
+    config.vm.network "private_network", ip: "10.10.10.35"
 
     # config.vm.synced_folder  "vagrant/sites", "/etc/httpd/sites-enabled", type: "nfs"
     config.vm.synced_folder "./", "/var/www/project",
