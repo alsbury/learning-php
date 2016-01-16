@@ -34,6 +34,7 @@ a2enmod ssl
 
 ./sync_site_configs.sh
 
+a2dissite 000-default.conf
 a2ensite 00_www.conf
 
 service apache2 restart
