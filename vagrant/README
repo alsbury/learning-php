@@ -1,0 +1,170 @@
+VAGRANT SETUP GUIDE FOR STARTCHURCH DEVELOPMENT
+
+This guide will walk you through the steps of setting up your development environment
+for StartCHURCH. I have attempted to make this as straightforward as possible, 
+hoping to make this a model for any Vagrant box you may setup for other projects
+in the future. I have also attempted to keep the new environment as close as possible
+to our current environment. I'm open to suggestions. Please provide feedback or requests 
+to modify to rob@startchurch.com.
+
+* BEFORE YOU START
+
+	We are going to be changing your current development environment so please backup
+	any files you may think you want to restore. Also please shutdown any virtual 
+	machine currently running (i.e. VMWare) to avoid any conflicts.
+
+* PREPARING YOUR ENVIRONMENT
+
+	There are several assumptions that are made regarding your development environment
+	file structure. This needs to be setup as defined in order for the scripts to run 
+	correctly.
+
+	1. You should have one development directory where all the subdirectories exist. Mine for example
+	   is "~/Development" though this name and its location is not a requirement.
+
+	2. In the development directory you need the following sub directories. You can have other 
+	   directories here as well, but these three will be required: 
+
+			- Projects
+			- Sandbox
+			- Vagrant
+	
+			* Note: all directories/files mentioned in this document are case sensitive
+	
+	3. The first directory "Projects" must contain a sub directory "startchurch". You can 
+	   have other project directories here as well, but this one will be expected.
+
+	4. Within the startchurch project directory is where you will have a subdirectory for
+	   each StartCHURCH code base you are working on. For example, "cloud.startchurch.com",
+	   "emanage.startchurch.com", etc. These are not required for the scripts to run, but
+	   will be expected when you navigate to those sites. You most likely already have these
+	   within your development environment. Otherwise, you can use git to clone them from
+	   the repository.
+   
+	5. The Sandbox directory is simply used to serve files for a sandbox.local virtual
+	   host which will be created by our scripts. You most likely already have these files
+	   within your current development environment but will be expected here. You may also
+	   leave this folder empty, but it should exist.
+   
+	6. The Vagrant folder will need to be created and will initially be empty.
+	
+
+* CLONE THE VAGRANT REPOSITORY
+
+	1. Open terminal and navigate to the Vagrant folder
+
+		$ cd ~/Development/Vagrant
+	
+	2. Clone the repository from sourcerepo into a directory called startchurch
+
+		$ git clone git@startchurch.sourcerepo.com:startchurch/Vagrant.git startchurch
+	
+	3. This new directory contains the necessary files to create our Vagrant server. Included
+	   is this README file which you may have received before you cloned the repository. If
+	   that is the case, please close this file and open the README file found in this
+	   repository to make sure you are following the latest directions.
+	   
+* GETTING A DATABASE DUMP
+
+	1. The script is going to expect two files called "startchurch.sql" & "cloud.sql" in the
+	   sql sub directory to import after starting the MySQL server. I have not included these
+	   files with the repository as they are large, won't be the latest, and do contain sensitive
+	   client data.
+	   
+	2. Using Sequel Pro (or another SQL client) dump the contents of the live server databases
+	   into files on your machine.
+	   
+	3. Rename these files "startchurch.sql" and "cloud.sql" respectively.
+	
+	4. In the StartCHURCH Vagrant directory created in the last section, there will be a sub
+	   directory called sql. Move the files into this directory.
+	   (i.e. "~/Development/Vagrant/startchurch/sql/startchurch.sql")
+	   
+* INSTALL VAGRANT & VIRTUAL BOX
+
+	1. Download & install the latest version of Vagrant for Mac OS X
+	
+		http://www.vagrantup.com/downloads.html
+	
+	2. Download & install the latest version of VirtualBox for OS X hosts
+	
+		https://www.virtualbox.org/wiki/Downloads
+	
+* UPDATE /etc/hosts FILE
+
+	The virtual machine you are about to create will have an ip address of 10.10.10.10. I chose
+	this number because it's easy to remember and is probably not what you are using as your
+	network at home. This will make it a private machine only available to your host. In order
+	to reach the virtual hosts that are created, you will need to change the ip address in
+	your /etc/hosts file. Virtual hosts for startchurch will end with .debug, and the sandbox
+	will be sandbox.local. So your file should have entries like the following:
+	
+		10.10.10.10		sandbox.local
+		10.10.10.10		startchurch.debug www.startchurch.debug
+		10.10.10.10		emanage.startchurch.debug
+		
+	You will want to make sure there entries are not in their more than once under different ip
+	addresses.
+	
+* UPDATE local.ini IN APPLICATION CONFIGS
+
+	Another thing you will have to do before you are able to visit your .debug sites is update
+	the local.ini in the code base. The script is going to setup the MySQL root password to be 
+	"sandbox". In the past you have probably used no password, but since some applications
+	won't allow a blank password, I thought it best to set one. This will also mean adding it
+	to any client apps that use it, like Sequel Pro.
+	
+* LET THE MAGIC BEGIN
+
+	Assuming you've done all the steps above, the real magic of Vagrant is about to happen. All
+	you have to do is be in the StartCHURCH Vagrant directory and issue one command "vagrant up".
+	
+		$ cd ~/Development/Vagrant/startchurch
+		$ vagrant up
+		
+	This still will take some time the first time you do this. It first will download an image
+	of the chosen operating system. Then it will import this image into VirtualBox for this
+	instance. The machine will boot, then the script will run that will install Apache, PHP, and
+	MySQL. It will make some configuration adjustments, setup MySQL with a root password, and
+	import the SQL file you placed in the folder.
+	
+* SO NOW WHAT?
+
+	You should now have a virtual machine running and you should be able to navigate to any 
+	StartCHURCH debug site you have setup and to your sandbox.
+	
+		http://sandbox.local
+		
+	So what is the benefit? If ever we have to make a change to the development server. The change
+	can be pushed to the repository. Then everyone simply pulls the change destroys the old machine
+	and recreates a new one. Very simple commands:
+	
+		$ vagrant destroy
+		$ vagrant up
+		
+	There are a couple of commands to learn. First off, all Vagrant commands must be run from the
+	same folder where the Vagrantfile resides (i.e. "~/Development/Vagrant/startchurch"). This is 
+	how it knows which vagrant you are trying to communicate with. You could have several running 
+	at once!
+	
+		$ vagrant up      - this is the command that will "boot" your virtual machine, build it
+							if necessary, and restart it from a halt or suspend.
+		$ vagrant halt    - same as a shutdown/power off
+		$ vagrant suspend - stores the exact state of the machine but stop processes from running
+		$ vagrant reload  - same a a restart/reboot
+		$ vagrant destroy - will remove all traces of the running machine, but don't worry, the 
+		                    configuration files will still be around, so a "vagrant up" will
+							restore it all again
+		$ vagrant status  - displays the current status of the machine
+		$ vagrant ssh     - will allow you to ssh into the machine as a user called "vagrant". To
+		                    perform anything requiring root privileges, simply use "sudo". If you
+							need to actually be root, run "sudo su".
+							
+	One other thing to note. When setting up clients such as Sequel Pro, you will need to use a
+	password for user "vagrant" since we haven't actually added an ssh key. That password is 
+	"vagrant".
+						
+	There are many other cool things to learn about like where boxes are stored, other commands, 
+	etc. To do so, visit http://www.vagrantup.com/
+	
+	

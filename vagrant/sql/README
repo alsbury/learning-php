@@ -1,0 +1,7 @@
+This directory requires SQL files for the follwing StartCHURCH databases, named accordingly:
+
+startchurch.sql
+cloud.sql
+
+Before performing the first "vagrant up" be sure to get the most recent SQL dump of these
+databases, rename the files as above, and place them in this directory.
